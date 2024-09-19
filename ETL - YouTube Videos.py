@@ -646,18 +646,13 @@ loadIntoSQLServer("Fact_VideoInfo", Fact_VideoInfo)
 Dim_Date = pd.read_csv('C:/Users/carlw/Downloads/Date_Dimension_2000-2025.csv')
 Dim_Date.info()
 
-#Dealing with string date values in an order yy-dd-mm to mm-dd-yy to allow conversion
+#Converting date string in the format it is in. i.e. The date format before the change should be what it shows in format
 from datetime import datetime
 
-Dim_Date['FullDateYMD'] = Dim_Date['FullDate']
-
-#Replacing / with -
-Dim_Date['FullDateYMD'] = Dim_Date['FullDateYMD'].str.replace('/', '-', regex=False)
-
-#Converts to date type
-Dim_Date['FullDateYMD'] = pd.to_datetime(Dim_Date['FullDateYMD'], format='%m-%d-%Y', errors='coerce')
-
-#Dim_Date['FullDateMDY'] = Dim_Date['FullDateMDY'].combine_first(pd.to_datetime(Dim_Date['FullDateMDY'], format='%m-%d-%y', errors='coerce'))
+try:
+    Dim_Date['FullDateYMD'] = pd.to_datetime(Dim_Date['FullDate'], format='%d/%m/%Y')
+except ValueError as e:
+    print(f"Error converting dates: {e}")
 
 
 #Calling the function with the table name for the database and the table variable in Python to pass through
@@ -677,6 +672,15 @@ merged_centralised_fact_table2.drop(columns=["FullDate","DateName","DayOfWeek","
 
 
 Fact_VideoInfo = merged_centralised_fact_table2.copy()
+
+####
+
+from datetime import datetime
+
+# Converting Date and Time string to date time
+Fact_VideoInfo['publish_time'] = pd.to_datetime(Fact_VideoInfo['publish_time'], format='%Y-%m-%dT%H:%M:%S.%fZ')
+
+####
 
 #Pipeline into SQL Server - Relationship in SQL Breaks when re-run & Fact Key have to be reasigned 
 loadIntoSQLServer("Fact_VideoInfo", Fact_VideoInfo)  
