@@ -504,253 +504,29 @@ Staging_US_Videos = Staging_US_Videos[Staging_US_Videos['category_id'] != 29]
 #Calling the function with the table name for the database and the table variable in Python to pass through
 loadIntoSQLServer("Staging_US_Videos", Staging_US_Videos)
 
-# Not Used 507 - 744  ################################################ DIM TABLES ###################################################
-
-##Import Data using the below libraries
-import pandas as pd
-import pyodbc
-
-#Creating a function to take tableName and dataFrame as arguments to save space
-def sourceSQLServer(server_name, database_name, sql_query):
-    server = server_name
-    database = database_name
-    ##username = 'your_username' - Don't Have - If available, will need to be added into the connection string
-    ###password = 'your_password' - Don't Have - If available, will need to be added into the connection string
-    
-    query = sql_query
-    
-    # Create a connection string # Removed trusted connection - connection_string = f'mssql+pyodbc://{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server;Trusted_Connection=yes'
-    connection_string = f'mssql+pyodbc://{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
-    engine = create_engine(connection_string)
-       
-    # Read data into a DataFrame
-    df = pd.read_sql(query, con=engine)
-    return df
-
-#Querying data from SQL database by the functioned defined above 
-merged_df = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	scv.video_id,
-	scv.title,
-	scv.thumbnail_link,
-	scv.description,
-	scv.category_id,
-	scc.etag,
-	scc.[snippet.assignable],
-	scc.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY scv.video_id ORDER BY scv.video_id) as Row_No
-FROM
-	[dbo].[Staging_CA_Videos] scv
-	INNER JOIN [dbo].[Staging_CA_Category] scc ON scc.id = scv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df['Dim_CAVideosKey'] = range(1, len(merged_df) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_CAVideos = merged_df.copy()
-Dim_CAVideos.drop(columns=['Row_No'], inplace=True)
-
-############################### Dim Tables Continued #####################################################
-
-##### DE
-
-#Querying data from SQL database by the functioned defined above 
-merged_df_de = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	sdv.video_id,
-	sdv.title,
-	sdv.thumbnail_link,
-	sdv.description,
-	sdv.category_id,
-	sdc.etag,
-	sdc.[snippet.assignable],
-	sdc.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY sdv.video_id ORDER BY sdv.video_id) as Row_No
-FROM
-	[dbo].[Staging_DE_Videos] sdv
-	INNER JOIN [dbo].[Staging_DE_Category] sdc ON sdc.id = sdv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df_de['Dim_DEVideosKey'] = range(1, len(merged_df_de) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_DEVideos = merged_df_de.copy()
-Dim_DEVideos.drop(columns=['Row_No'], inplace=True)
-
-##### FR
-
-#Querying data from SQL database by the functioned defined above 
-merged_df_fr = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	sfv.video_id,
-	sfv.title,
-	sfv.thumbnail_link,
-	sfv.description,
-	sfv.category_id,
-	sfc.etag,
-	sfc.[snippet.assignable],
-	sfc.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY sfv.video_id ORDER BY sfv.video_id) as Row_No
-FROM
-	[dbo].[Staging_FR_Videos] sfv
-	INNER JOIN [dbo].[Staging_FR_Category] sfc ON sfc.id = sfv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df_fr['Dim_FRVideosKey'] = range(1, len(merged_df_fr) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_FRVideos = merged_df_fr.copy()
-Dim_FRVideos.drop(columns=['Row_No'], inplace=True)
-
-##### GB
-
-#Querying data from SQL database by the functioned defined above 
-merged_df_gb = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	sgv.video_id,
-	sgv.title,
-	sgv.thumbnail_link,
-	sgv.description,
-	sgv.category_id,
-	sgc.etag,
-	sgc.[snippet.assignable],
-	sgc.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY sgv.video_id ORDER BY sgv.video_id) as Row_No
-FROM
-	[dbo].[Staging_GB_Videos] sgv
-	INNER JOIN [dbo].[Staging_GB_Category] sgc ON sgc.id = sgv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df_gb['Dim_GBVideosKey'] = range(1, len(merged_df_gb) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_GBVideos = merged_df_gb.copy()
-Dim_GBVideos.drop(columns=['Row_No'], inplace=True)
-
-##### IN
-
-#Querying data from SQL database by the functioned defined above 
-merged_df_in = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	siv.video_id,
-	siv.title,
-	siv.thumbnail_link,
-	siv.description,
-	siv.category_id,
-	sic.etag,
-	sic.[snippet.assignable],
-	sic.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY siv.video_id ORDER BY siv.video_id) as Row_No
-FROM
-	[dbo].[Staging_IN_Videos] siv
-	INNER JOIN [dbo].[Staging_IN_Category] sic ON sic.id = siv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df_in['Dim_INVideosKey'] = range(1, len(merged_df_in) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_INVideos = merged_df_in.copy()
-Dim_INVideos.drop(columns=['Row_No'], inplace=True)
-
-##### US
-
-#Querying data from SQL database by the functioned defined above 
-merged_df_us = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """WITH dimenstion_columns_with_row_numbers AS (
-SELECT DISTINCT
-	suv.video_id,
-	suv.title,
-	suv.thumbnail_link,
-	suv.description,
-	suv.category_id,
-	suc.etag,
-	suc.[snippet.assignable],
-	suc.[snippet.title],
-	ROW_NUMBER() OVER(PARTITION BY suv.video_id ORDER BY suv.video_id) as Row_No
-FROM
-	[dbo].[Staging_US_Videos] suv
-	INNER JOIN [dbo].[Staging_US_Category] suc ON suc.id = suv.category_id
-)
-SELECT *
-FROM
-	dimenstion_columns_with_row_numbers
-WHERE Row_No = 1""")
-
-#Adding an auto increase Identifier key
-merged_df_us['Dim_USVideosKey'] = range(1, len(merged_df_us) + 1)
-
-#Creating a Dimension Copy of the merged assigned query
-Dim_USVideos = merged_df_us.copy()
-Dim_USVideos.drop(columns=['Row_No'], inplace=True)
-
-############################ Creating a Fact Table based off of one Dimenstion Table ######################
-
-fact_df = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
- """SELECT 
-    scv.trending_date,
- 	scv.publish_time,
-	scv.comment_count,
-	scv.comments_disabled,
-	scv.dislikes,
-	scv.likes,
-	scv.No_of_tags,
-	scv.views,
-	scv.video_id
-FROM
-	[dbo].[Staging_CA_Videos] scv
-ORDER BY
-	video_id,
-	views""")
-
-#Merging Dim table to get the Dim Key with the common column
-merged_fact_df = pd.merge(fact_df, Dim_CAVideos, left_on='video_id', right_on='video_id', how='inner')
-
-#Adding an auto increase Identifier key
-merged_fact_df['Fact_CAVideoKey'] = range(1, len(merged_fact_df) + 1)
-merged_fact_df.drop(columns=['video_id', 'title', 'thumbnail_link', 'description',
-                    'category_id', 'etag', 'snippet.assignable', 'snippet.title'], inplace=True)
-
-#Storing the fact table in their own variable
-Fact_VideoInfo = merged_fact_df.copy()
-
-# Not Used 507 - 744  
-
 ################### Simplified
 
 ##Import Data using the below libraries
 import pandas as pd
+from sqlalchemy import create_engine
 import pyodbc
 
+#Creating a function to take tableName and dataFrame as arguments to save space
+def loadIntoSQLServer(tableName, dataFrame):
+    server = 'PROTOTYPE-6'
+    database = 'DWH_Python'
+    ##username = 'your_username' - Don't Have - If available, will need to be added into the connection string
+    ###password = 'your_password' - Don't Have - If available, will need to be added into the connection string
+    table_name = tableName
+      
+    # Create a connection string # Removed trusted connection - connection_string = f'mssql+pyodbc://{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server;Trusted_Connection=yes'
+    connection_string = f'mssql+pyodbc://{server}/{database}?driver=ODBC+Driver+17+for+SQL+Server'
+    engine = create_engine(connection_string)
+    print(connection_string)
+      
+    # Write DataFrame to SQL Server - If_exists deleted and recreates the table
+    dataFrame.to_sql(table_name, con=engine, if_exists='replace', index=False)
+    
 #Creating a function to take tableName and dataFrame as arguments to save space
 def sourceSQLServer(server_name, database_name, sql_query):
     server = server_name
@@ -768,7 +544,7 @@ def sourceSQLServer(server_name, database_name, sql_query):
     df = pd.read_sql(query, con=engine)
     return df
 
-#### Dim Table
+#### Dim Table 
 
 #Query to UNION all common tables and only display the unique columns without 2 names without an ID.
 centralised_dim_table = sourceSQLServer("PROTOTYPE-6", "DWH_Python", 
@@ -788,6 +564,10 @@ SELECT *, ROW_NUMBER() OVER(PARTITION BY suv.video_id ORDER BY suv.video_id) as 
 SELECT DISTINCT
 	video_id,
 	title,
+    channel_title,
+    comments_disabled,
+    ratings_disabled,
+    video_error_or_removed,
 	thumbnail_link,
 	description,
 	[snippet.assignable],
@@ -827,7 +607,6 @@ SELECT * FROM [dbo].[Staging_US_Videos]
 )
 SELECT
 	comment_count,
-	comments_disabled,
 	trending_date,
 	publish_time,
 	dislikes,
@@ -852,7 +631,7 @@ merged_centralised_fact_table = pd.merge(centralised_fact_table, Dim_Video, left
 merged_centralised_fact_table['Fact_VideoInfoKey'] = range(1, len(merged_centralised_fact_table) + 1)
 
 merged_centralised_fact_table.drop(columns=['video_id', 'title', 'thumbnail_link', 'description',
-                    'snippet.assignable', 'snippet.title'], inplace=True)
+                    'snippet.assignable', 'snippet.title', 'channel_title'], inplace=True)
 
 #Storing the fact table in their own variable
 Fact_VideoInfo = merged_centralised_fact_table.copy()
@@ -870,13 +649,13 @@ Dim_Date.info()
 #Dealing with string date values in an order yy-dd-mm to mm-dd-yy to allow conversion
 from datetime import datetime
 
-Dim_Date['FullDateYDM'] = Dim_Date['FullDate']
+Dim_Date['FullDateYMD'] = Dim_Date['FullDate']
 
 #Replacing / with -
-Dim_Date['FullDateMDY'] = Dim_Date['FullDateMDY'].str.replace('/', '-', regex=False)
+Dim_Date['FullDateYMD'] = Dim_Date['FullDateYMD'].str.replace('/', '-', regex=False)
 
 #Converts to date type
-Dim_Date['FullDateMDY'] = pd.to_datetime(Dim_Date['FullDateMDY'], format='%m-%d-%Y', errors='coerce')
+Dim_Date['FullDateYMD'] = pd.to_datetime(Dim_Date['FullDateYMD'], format='%m-%d-%Y', errors='coerce')
 
 #Dim_Date['FullDateMDY'] = Dim_Date['FullDateMDY'].combine_first(pd.to_datetime(Dim_Date['FullDateMDY'], format='%m-%d-%y', errors='coerce'))
 
@@ -887,14 +666,14 @@ loadIntoSQLServer("Dim_Date", Dim_Date)
 ####################################### Fact + Dim Date #################################################
 
 
-merged_centralised_fact_table2 = pd.merge(merged_centralised_fact_table, Dim_Date, left_on='trending_date', right_on='FullDateMDY', how='inner')
+merged_centralised_fact_table2 = pd.merge(merged_centralised_fact_table, Dim_Date, left_on='trending_date', right_on='FullDateYMD', how='inner')
 
 merged_centralised_fact_table2.drop(columns=["FullDate","DateName","DayOfWeek","DayNameOfWeek"
                                              ,"DayOfMonth","DayOfYear","WeekdayWeekend","WeekOfYear"
                                              ,"MonthName","MonthOfYear","IsLastDayOfMonth","CalendarQuarter"
                                              ,"CalendarYear","CalendarYearMonth","CalendarYearQtr","FiscalMonthOfYear"
                                              ,"FiscalQuarter","FiscalYear","FiscalYearMonth"
-                                             ,"FiscalYearQtr","FullDateMDY"], inplace=True)
+                                             ,"FiscalYearQtr","FullDateYMD"], inplace=True)
 
 
 Fact_VideoInfo = merged_centralised_fact_table2.copy()
@@ -905,75 +684,5 @@ loadIntoSQLServer("Fact_VideoInfo", Fact_VideoInfo)
 
 #########################################################################################################
 
-######Handling Exceptions#########
 
-#ValueError Exception Handling   
-abc = input("Please input a value :")
-try:
-    result = int(abc)
-#except Exception as e:
-except ValueError:
-    print("You have entered in the incorrect value. Please try again.")
-
-#IndexError Exception Handling      
-list_ = [3, 5, 7, 3, 5]
-try:
-    print(list_[5])
-#except Exception as e:
-except IndexError:
-    print("You are trying to print an index that does not exist. Please try again.")    
-
-
-#TypeError and ZeroDivisionError Exception Handling      
-list_ = [3, 5, 7, 3, "5", 0]
-try:
-    result = list_[2]/list_[5]
-    print("Great! The result is : ",result)
-except TypeError:
-    print("One of the inputs is not the correct data type. Please try again.")    
-except ZeroDivisionError:
-    print("You are trying to divide by 0. Please try again.")
-finally:
-    print("For any technical support, please contact our hotline.")
-
-#Creating the same code as above, but having the errors in one line of code
-list_ = [3, 5, 7, 3, "5", 0]
-try:
-    result = list_[2]/list_[4]
-    print("Great! The result is : ",result)
-except (TypeError, ZeroDivisionError) as e:
-    print(f"An error has occured {e}. Please try again.")    
-finally:
-    print("For any technical support, please contact our hotline.")
-
-##########################################################################################
-
-### Will only work with Pyspark defined dataframes, not pandas defined dataframes. ###
-
-## Requires Java installation + Environmental Variable - Check ChatGPT for further info
-# Importing the necessary modules from PySpark
-from pyspark.sql import SparkSession
-
-# Create a Spark session
-spark = SparkSession.builder \
-    .appName("MyPySparkApp") \
-    .getOrCreate()
-
-# Verify that Spark is working
-print("Spark version:", spark.version)
-
-# Stop the Spark session when done
-spark.stop()
-
-###########################################################################################
-
-from pyspark.sql.functions import *
-
-merged_df = Staging_CA_Videos.join(Staging_CA_Category, Staging_CA_Category['id'] == Staging_CA_Videos['category_id'], how='inner')
-
-merged_df = Staging_CA_Videos.join(Staging_CA_Category, Staging_CA_Videos['category_id'] == Staging_CA_Category['id'], 'inner')
-
-###########################################################################################
-
-
-
+   
